@@ -1,89 +1,64 @@
-# ClearView - AI Software Lifecycle Cleaner 🧹
+# 🧹 ClearView  
+### *AI Software Lifecycle Cleaner*  
+**Built for the BNY Mellon Hackathon — Best AI Hack | Best App | Auritas Data Viz | Snowflake**
 
-Built for the BNY Mellon Hackathon — Best AI Hack | Best App | Auritas Data Viz | Snowflake
+---
 
-💡 Overview
+## 💡 Overview  
+**ClearView** is an AI-powered web application that intelligently cleans and analyzes messy software inventory data, giving organizations instant visibility into their technology lifecycle.  
 
-ClearView is an AI-powered web app that automatically cleans and analyzes messy software inventory data.
+Upload a CSV or text export of software assets, and ClearView will:  
+- 🧠 **Normalize** vendor, product, and version names using the **Gemini API**  
+- ⏳ **Predict** End-of-Support (EOS) dates using rule-based logic or a reference dataset  
+- 📊 **Visualize** lifecycle health and risk through an interactive dashboard  
+- 💾 **Export** a fully cleaned dataset ready for audits and compliance reports  
 
-Upload a CSV or text export of your organization’s software assets, and ClearView will:
+> ClearView helps IT and compliance teams quickly identify outdated or high-risk software — saving hours of manual data cleanup.
 
-Normalize vendor, product, and version names using the Gemini API
+---
 
-Predict End-of-Support (EOS) dates using rule-based logic or a reference dataset
+## 🧠 Why It Stands Out  
+- ⚙️ **AI Automation:** Gemini AI intelligently standardizes inconsistent data  
+- 📈 **Insightful Dashboards:** Real-time lifecycle KPIs and risk breakdowns  
+- 💻 **Lightweight & Local:** Works fully offline with no external dependencies  
+- 🚀 **Hackathon-Ready:** Fully buildable and demoable in under 10 hours  
 
-Visualize lifecycle risk in an interactive dashboard
+---
 
-Export a fully cleaned dataset ready for audits or reports
+## ⚙️ Tech Stack  
 
-This helps IT and compliance teams quickly identify outdated or high-risk software.
+| Layer | Technology |
+|:------|:------------|
+| **Frontend** | React (Vite) + TailwindCSS + Chart.js |
+| **Backend** | Node.js + Express + Prisma ORM |
+| **Database** | SQLite (local file database) |
+| **AI Integration** | Gemini API |
+| **Visualization** | Chart.js / Plotly |
+| **Optional** | Snowflake API (for cloud data storage) |
 
-🧠 Why It Stands Out
+---
 
-⚙️ AI Automation: Gemini AI cleans and standardizes messy data
+## 🧩 Key Features  
+✅ Upload and parse CSV or text logs  
+✅ AI-powered name normalization via Gemini  
+✅ EOS prediction and lifecycle risk tagging  
+✅ Clean visual KPIs with charts and tables  
+✅ Export cleaned CSV for external use  
 
-📊 Data Visualization: Real-time risk charts and lifecycle KPIs
+---
 
-⚡ Full-Stack Simplicity: Local setup, zero external config
+## 🏁 How to Run Locally  
 
-🕒 Hackathon-Optimized: Fully demoable in under 10 hours
-
-⚙️ Tech Stack
-Layer	Technology
-Frontend	React (Vite) + TailwindCSS + Chart.js
-Backend	Node.js + Express + Prisma ORM
-Database	SQLite (local file database)
-AI Integration	Gemini API
-Visualization	Chart.js / Plotly
-Optional	Snowflake API for cloud storage
-🧩 Features
-
-✅ CSV upload and parsing
-✅ AI-powered name normalization
-✅ EOS prediction and risk tagging
-✅ Dashboard with KPIs and charts
-✅ Clean CSV export
-
-🏗️ Quick Architecture
-frontend/
-  src/
-    components/ (UploadPanel, Charts, Table)
-backend/
-  src/
-    routes/ (ingest, normalize, eos, export)
-    prisma/schema.prisma
-data/
-  eos_reference.csv
-
-🏁 How to Run Locally
-# 1. Clone the repository
+### 1️⃣ Clone the Repository  
+```bash
 git clone https://github.com/yourorg/clearview
 cd clearview
-
-# 2. Start the backend
 cd backend
 npm install
 npx prisma migrate dev --name init
 npm run dev
-# Runs on http://localhost:3000
-
-# 3. Start the frontend
+# → Runs on http://localhost:3000
 cd ../frontend
 npm install
 npm run dev
-# Opens at http://localhost:5173
-
-
-Then open your browser, upload a sample CSV, click Normalize → Compute EOS, and explore the dashboard.
-
-🔍 Example Workflow
-
-Upload software_inventory.csv
-
-Click Normalize → Gemini cleans product names
-
-Click Compute EOS → Tags software by lifecycle risk
-
-View KPIs, risk charts, and manufacturer breakdowns
-
-Export the cleaned dataset
+# → Opens at http://localhost:5173
