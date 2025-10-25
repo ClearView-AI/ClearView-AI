@@ -48,8 +48,6 @@ Upload a CSV or text export of software assets, and ClearView will:
 ---
 
 ## 🏁 How to Run Locally  
-
-### 1️⃣ Clone the Repository  
 ```bash
 git clone https://github.com/yourorg/clearview
 cd clearview
@@ -58,6 +56,7 @@ npm install
 npx prisma migrate dev --name init
 npm run dev
 # → Runs on http://localhost:3000
+
 cd ../frontend
 npm install
 npm run dev
