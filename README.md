@@ -1,4 +1,4 @@
-# ClearView🧹 AI Software Lifecycle Cleaner
+# ClearView - AI Software Lifecycle Cleaner 🧹
 
 Built for the BNY Mellon Hackathon — Best AI Hack | Best App | Auritas Data Viz | Snowflake
 
