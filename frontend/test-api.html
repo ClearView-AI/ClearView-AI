@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClearView API Tester</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #0A0A0A;
+            color: #FFF;
+        }
+        h1 { color: #3B82F6; margin-bottom: 10px; }
+        h2 { color: #60A5FA; margin-top: 30px; border-bottom: 2px solid #262626; padding-bottom: 10px; }
+        .endpoint {
+            background: #141414;
+            border: 1px solid #262626;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .endpoint-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #FFF;
+            margin-bottom: 10px;
+        }
+        .method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+        .method-get { background: #10B981; color: #FFF; }
+        .method-post { background: #3B82F6; color: #FFF; }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #2563EB;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .result {
+            background: #0A0A0A;
+            border: 1px solid #262626;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Monaco', monospace;
+            font-size: 13px;
+            color: #10B981;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #EF4444;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 10px;
+        }
+        .status-online { background: #10B981; color: #FFF; }
+        .status-offline { background: #EF4444; color: #FFF; }
+        input[type="file"] {
+            background: #141414;
+            border: 1px solid #262626;
+            color: #FFF;
+            padding: 8px;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+        .info {
+            background: #3B82F6;
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .info h3 {
+            margin-top: 0;
+            color: #FFF;
+        }
+        code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 ClearView API Tester</h1>
+    <p style="color: #A1A1A1; margin-top: 0;">Test your backend API endpoints directly from the browser</p>
+
+    <div class="info">
+        <h3>📡 Connection Status</h3>
+        <p>Backend API: <code id="apiUrl">http://localhost:3000</code> <span id="status" class="status status-offline">CHECKING...</span></p>
+        <button onclick="checkConnection()">🔄 Check Connection</button>
+    </div>
+
+    <h2>Main App Endpoints</h2>
+
+    <div class="endpoint">
+        <div class="endpoint-title">
+            <span class="method method-get">GET</span>
+            <span>/api/summary</span>
+        </div>
+        <p style="color: #A1A1A1; font-size: 14px;">Get dashboard summary with KPIs</p>
+        <button onclick="testSummary()">Test Summary</button>
+        <div id="summary-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">
+            <span class="method method-get">GET</span>
+            <span>/api/records</span>
+        </div>
+        <p style="color: #A1A1A1; font-size: 14px;">Get software records list</p>
+        <button onclick="testRecords()">Test Records</button>
+        <div id="records-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">
+            <span class="method method-post">POST</span>
+            <span>/api/ingest</span>
+        </div>
+        <p style="color: #A1A1A1; font-size: 14px;">Upload CSV file for processing</p>
+        <input type="file" id="fileInput" accept=".csv,.json,.txt">
+        <button onclick="testIngest()">Upload File</button>
+        <div id="ingest-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">
+            <span class="method method-post">POST</span>
+            <span>/api/normalize</span>
+        </div>
+        <p style="color: #A1A1A1; font-size: 14px;">Normalize software names using AI</p>
+        <button onclick="testNormalize()">Test Normalize</button>
+        <div id="normalize-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">
+            <span class="method method-post">POST</span>
+            <span>/api/eos</span>
+        </div>
+        <p style="color: #A1A1A1; font-size: 14px;">Compute End-of-Support dates</p>
+        <button onclick="testEOS()">Test EOS</button>
+        <div id="eos-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">
+            <span class="method method-get">GET</span>
+            <span>/api/export</span>
+        </div>
+        <p style="color: #A1A1A1; font-size: 14px;">Export data as CSV</p>
+        <button onclick="testExport()">Test Export</button>
+        <div id="export-result" class="result" style="display: none;"></div>
+    </div>
+
+    <h2>Auritas Viz Endpoints</h2>
+
+    <div class="endpoint">
+        <div class="endpoint-title">
+            <span class="method method-post">POST</span>
+            <span>/api/auritas/viz/preview</span>
+        </div>
+        <p style="color: #A1A1A1; font-size: 14px;">Preview CSV from text</p>
+        <button onclick="testAuritasPreview()">Test Preview</button>
+        <div id="auritas-preview-result" class="result" style="display: none;"></div>
+    </div>
+
+    <h2>Gemini AI Endpoints</h2>
+
+    <div class="endpoint">
+        <div class="endpoint-title">
+            <span class="method method-post">POST</span>
+            <span>/api/gemini/extract-software</span>
+        </div>
+        <p style="color: #A1A1A1; font-size: 14px;">Extract software info using Gemini AI</p>
+        <button onclick="testGemini()">Test Gemini</button>
+        <div id="gemini-result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+
+        function showResult(id, data, isError = false) {
+            const element = document.getElementById(id);
+            element.style.display = 'block';
+            element.className = isError ? 'result error' : 'result';
+            element.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        }
+
+        async function checkConnection() {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = 'CHECKING...';
+            statusEl.className = 'status status-offline';
+            
+            try {
+                await axios.get(`${API_URL}/api/summary`, { timeout: 3000 });
+                statusEl.textContent = 'ONLINE';
+                statusEl.className = 'status status-online';
+            } catch (error) {
+                statusEl.textContent = 'OFFLINE';
+                statusEl.className = 'status status-offline';
+            }
+        }
+
+        async function testSummary() {
+            try {
+                const response = await axios.get(`${API_URL}/api/summary`);
+                showResult('summary-result', response.data);
+            } catch (error) {
+                showResult('summary-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testRecords() {
+            try {
+                const response = await axios.get(`${API_URL}/api/records`);
+                showResult('records-result', response.data);
+            } catch (error) {
+                showResult('records-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testIngest() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files[0]) {
+                showResult('ingest-result', 'Please select a file first', true);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await axios.post(`${API_URL}/api/ingest`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                showResult('ingest-result', response.data);
+            } catch (error) {
+                showResult('ingest-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testNormalize() {
+            try {
+                const response = await axios.post(`${API_URL}/api/normalize`);
+                showResult('normalize-result', response.data);
+            } catch (error) {
+                showResult('normalize-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testEOS() {
+            try {
+                const response = await axios.post(`${API_URL}/api/eos`);
+                showResult('eos-result', response.data);
+            } catch (error) {
+                showResult('eos-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testExport() {
+            try {
+                const response = await axios.get(`${API_URL}/api/export`, {
+                    responseType: 'blob'
+                });
+                
+                // Create download link
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'export.csv');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                
+                showResult('export-result', 'File downloaded successfully!');
+            } catch (error) {
+                showResult('export-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testAuritasPreview() {
+            try {
+                const sampleCSV = `Vendor,Product,Version
+Microsoft,Office,365
+Adobe,Photoshop,2024`;
+                
+                const response = await axios.post(`${API_URL}/api/auritas/viz/preview`, {
+                    csv: sampleCSV
+                });
+                showResult('auritas-preview-result', response.data);
+            } catch (error) {
+                showResult('auritas-preview-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function testGemini() {
+            try {
+                const response = await axios.post(`${API_URL}/api/gemini/extract-software`, {
+                    text: 'Microsoft Office 365 Enterprise Edition Version 2024'
+                });
+                showResult('gemini-result', response.data);
+            } catch (error) {
+                showResult('gemini-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        // Check connection on load
+        window.onload = () => {
+            checkConnection();
+        };
+    </script>
+</body>
+</html>
+
