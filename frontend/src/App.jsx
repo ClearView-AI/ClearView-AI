@@ -11,7 +11,7 @@ import { useToast } from './hooks/useToast';
 import { api } from './lib/api';
 
 function App() {
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [, setUploadedFile] = useState(null);
   const { toasts, success, error, removeToast } = useToast();
   
   const { execute: executeIngest, loading: ingestLoading } = useApi(api.ingest);
