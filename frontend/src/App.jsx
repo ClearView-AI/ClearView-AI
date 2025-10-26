@@ -59,6 +59,14 @@ function App() {
     }
   };
 
+  const handleClear = () => {
+    // Reset all state related to uploaded file
+    setRawCSVText(null);
+    setCsvFileId(null);
+    setProcessedData(null);
+    success('File cleared successfully!');
+  };
+
   const handleNormalize = async () => {
     try {
       if (!rawCSVText) {
@@ -217,6 +225,7 @@ function App() {
               onUpload={handleUpload}
               onNormalize={handleNormalize}
               onComputeEOS={handleComputeEOS}
+              onClear={handleClear}
               loading={loading}
             />
 

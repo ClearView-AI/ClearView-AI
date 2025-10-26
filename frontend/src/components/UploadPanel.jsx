@@ -1,8 +1,8 @@
-import { Upload, Download } from 'lucide-react';
+import { Upload, Download, Trash2 } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { cn } from '../lib/utils';
 
-export function UploadPanel({ onUpload, onNormalize, onComputeEOS, loading }) {
+export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onClear, loading }) {
   const [dragActive, setDragActive] = useState(false);
   const [fileName, setFileName] = useState('');
   const inputRef = useRef(null);
@@ -75,6 +75,17 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, loading }) {
     inputRef.current?.click();
   };
 
+  const handleClear = (e) => {
+    e.stopPropagation();
+    setFileName('');
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+    if (onClear) {
+      onClear();
+    }
+  };
+
   return (
     <div className="card p-6 space-y-6 hover:bg-card-hover transition-colors duration-200">
       {/* Upload Zone */}
@@ -114,8 +125,16 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, loading }) {
           </div>
 
           {fileName && (
-            <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg shadow-sm">
+            <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg shadow-sm flex items-center gap-3 group">
               <p className="text-sm text-white font-medium">📄 {fileName}</p>
+              <button
+                onClick={handleClear}
+                className="text-red-400 hover:text-red-300 transition-colors p-1 hover:bg-red-500/10 rounded"
+                title="Remove file"
+                aria-label="Remove file"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           )}
 
