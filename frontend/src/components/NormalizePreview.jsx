@@ -1,7 +1,7 @@
-import { Download, ArrowLeft } from 'lucide-react';
+import { Download, ArrowLeft, Sparkles } from 'lucide-react';
 
 /* eslint-disable react/prop-types */
-export function NormalizePreview({ normalizedData, onBack, onDownload }) {
+export function NormalizePreview({ normalizedData, aiEnhanced = false, onBack, onDownload }) {
   const handleDownload = () => {
     try {
       // Convert normalized data to CSV (without EOS fields)
@@ -52,9 +52,18 @@ export function NormalizePreview({ normalizedData, onBack, onDownload }) {
               </button>
               <div className="h-6 w-px bg-border-subtle" />
               <div>
-                <h1 className="text-2xl font-bold text-white">Normalized Data Preview</h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-white">Normalized Data Preview</h1>
+                  {aiEnhanced && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 ring-1 ring-blue-500/30">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      AI Enhanced
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-400 mt-1">
                   Review your cleaned and normalized data before downloading
+                  {aiEnhanced && ' • Enhanced with Gemini AI'}
                 </p>
               </div>
             </div>

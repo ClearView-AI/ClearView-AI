@@ -9,11 +9,14 @@ import { ToastContainer } from './components/Toast';
 import { NormalizePreview } from './components/NormalizePreview';
 import { useToast } from './hooks/useToast';
 import { parseCSV, normalizeData, computeEOS, calculateSummary, getChartData, exportToCSV } from './lib/dataProcessor';
+import { api } from './lib/api';
 
 function App() {
   const [rawCSVText, setRawCSVText] = useState(null);
+  const [csvFileId, setCsvFileId] = useState(null);
   const [processedData, setProcessedData] = useState(null);
   const [normalizedDataPreview, setNormalizedDataPreview] = useState(null);
+  const [aiEnhanced, setAiEnhanced] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'normalize'
   
@@ -60,8 +63,10 @@ function App() {
   const handleClear = () => {
     // Reset all state related to uploaded file
     setRawCSVText(null);
+    setCsvFileId(null);
     setProcessedData(null);
     setNormalizedDataPreview(null);
+    setAiEnhanced(false);
     setCurrentView('dashboard');
     success('File cleared successfully!');
   };
@@ -75,17 +80,77 @@ function App() {
       
       setIsProcessing(true);
       
-      // Parse CSV on client side
+      // Step 1: Upload CSV to backend to get csvFileId
+      let fileId = csvFileId;
+      if (!fileId) {
+        const previewResponse = await api.previewCSV({ csvText: rawCSVText, filename: 'upload.csv' });
+        fileId = previewResponse.data.csvFileId;
+        setCsvFileId(fileId);
+      }
+      
+      // Step 2: Parse CSV on client side
       const rawData = parseCSV(rawCSVText);
       
-      // Normalize data
+      // Step 3: Do initial normalization with local logic
       const normalized = normalizeData(rawData);
-      setNormalizedDataPreview(normalized);
+      
+      // Step 4: Enhance with Gemini API (AI-powered parsing)
+      try {
+        // Determine which column likely contains software/product names
+        const firstRow = rawData[0] || {};
+        const possibleColumns = ['Product', 'product', 'Software', 'software', 'Vendor', 'vendor'];
+        const columnName = possibleColumns.find(col => Object.hasOwn(firstRow, col)) || Object.keys(firstRow)[0];
+        
+        if (columnName && rawData.length > 0) {
+          // Call Gemini API to extract and parse software information
+          const geminiResponse = await api.extractSoftware({
+            csvFileId: fileId,
+            columnName: columnName,
+            limit: Math.min(rawData.length, 100) // Process up to 100 records
+          });
+          
+          // Merge Gemini results with normalized data
+          const geminiItems = geminiResponse.data.items || [];
+          const enhanced = normalized.map((record, index) => {
+            const geminiData = geminiItems[index]?.parsed;
+            
+            // Use Gemini data if confidence is high enough (> 0.7)
+            if (geminiData && geminiData.confidence > 0.7) {
+              return {
+                ...record,
+                vendor: geminiData.manufacturer || record.vendor,
+                product: geminiData.product || record.product,
+                version: geminiData.version || record.version,
+                // Keep other fields from local normalization
+                eosDate: record.eosDate,
+                risk: record.risk,
+                cost: record.cost
+              };
+            }
+            
+            return record;
+          });
+          
+          setNormalizedDataPreview(enhanced);
+          setAiEnhanced(true);
+          success('Data normalized with AI successfully!');
+        } else {
+          // Fallback to local normalization if no suitable column found
+          setNormalizedDataPreview(normalized);
+          setAiEnhanced(false);
+          success('Data normalized successfully!');
+        }
+      } catch (geminiError) {
+        console.warn('Gemini API failed, using local normalization:', geminiError);
+        // Fallback to local normalization if Gemini fails
+        setNormalizedDataPreview(normalized);
+        setAiEnhanced(false);
+        success('Data normalized successfully! (AI enhancement unavailable)');
+      }
       
       // Navigate to preview screen
       setCurrentView('normalize');
       
-      success('Data normalized successfully!');
     } catch (err) {
       error('Failed to normalize data. Please try again.');
       console.error('Normalize error:', err);
@@ -227,6 +292,7 @@ function App() {
         {/* Normalize Preview */}
         <NormalizePreview
           normalizedData={normalizedDataPreview}
+          aiEnhanced={aiEnhanced}
           onBack={handleBackToDashboard}
           onDownload={handleNormalizedDownload}
         />
