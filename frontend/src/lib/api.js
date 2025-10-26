@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -41,20 +41,14 @@ export const api = {
   exportCSV: () => apiClient.get('/api/auritas/viz/export', {
     responseType: 'blob',
   }),
+  getSummary: (csvFileId) => apiClient.get('/api/auritas/viz/summary', { params: { csvFileId } }),
   
   // Gemini endpoints
   extractSoftware: (data) => apiClient.post('/api/gemini/extract-software', data),
   
-  // Main app endpoints (to be implemented by backend)
-  ingest: (formData) => apiClient.post('/api/ingest', formData, {
+  // Main app endpoints using existing backend
+  ingest: (formData) => apiClient.post('/api/auritas/viz/preview-file', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
-  }),
-  normalize: () => apiClient.post('/api/normalize'),
-  computeEOS: () => apiClient.post('/api/eos'),
-  getSummary: () => apiClient.get('/api/summary'),
-  getRecords: (params) => apiClient.get('/api/records', { params }),
-  exportData: () => apiClient.get('/api/export', {
-    responseType: 'blob',
   }),
 };
 
