@@ -1,21 +1,46 @@
 // Client-side data processing utilities
 
 /**
+ * Parse a CSV line handling quoted fields
+ */
+function parseCSVLine(line) {
+  const values = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      values.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  values.push(current.trim());
+  return values;
+}
+
+/**
  * Parse CSV text into array of objects
  */
 export function parseCSV(csvText) {
   const lines = csvText.trim().split('\n');
   if (lines.length < 2) return [];
   
-  const headers = lines[0].split(',').map(h => h.trim());
+  const headers = parseCSVLine(lines[0]);
   const rows = [];
   
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.trim());
+    const values = parseCSVLine(lines[i]);
     const row = {};
-    headers.forEach((header, index) => {
+    for (const [index, header] of headers.entries()) {
       row[header] = values[index] || '';
-    });
+    }
     if (Object.values(row).some(v => v !== '')) {
       rows.push(row);
     }
@@ -76,8 +101,11 @@ function normalizeVersion(version) {
   if (!version) return '';
   let cleaned = cleanText(version);
   
-  // Remove common prefixes
-  cleaned = cleaned.replace(/^(v|ver|version)\s*/i, '');
+  // Remove common prefixes (whole word only)
+  cleaned = cleaned.replace(/^v\s+/i, ''); // "v 2.0" → "2.0"
+  cleaned = cleaned.replace(/^v(\d)/i, '$1'); // "v2.0" → "2.0"
+  cleaned = cleaned.replace(/^ver\s+/i, ''); // "ver 2.0" → "2.0"
+  cleaned = cleaned.replace(/^version\s+/i, ''); // "version 2.0" → "2.0"
   
   return cleaned;
 }
@@ -90,13 +118,48 @@ function normalizeDate(dateStr) {
   
   const cleaned = cleanText(dateStr);
   
+  // If already in YYYY-MM-DD format, return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) {
+    return cleaned;
+  }
+  
+  // Try to parse different date formats
+  let year, month, day;
+  
+  // Format: MM/DD/YYYY or M/D/YYYY
+  const slashMatch = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch) {
+    month = slashMatch[1].padStart(2, '0');
+    day = slashMatch[2].padStart(2, '0');
+    year = slashMatch[3];
+    return `${year}-${month}-${day}`;
+  }
+  
+  // Format: MM-DD-YYYY or M-D-YYYY
+  const dashMatch = cleaned.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if (dashMatch) {
+    month = dashMatch[1].padStart(2, '0');
+    day = dashMatch[2].padStart(2, '0');
+    year = dashMatch[3];
+    return `${year}-${month}-${day}`;
+  }
+  
+  // Format: YYYY/MM/DD
+  const yearFirstSlash = cleaned.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if (yearFirstSlash) {
+    year = yearFirstSlash[1];
+    month = yearFirstSlash[2].padStart(2, '0');
+    day = yearFirstSlash[3].padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  
   try {
-    const date = new Date(cleaned);
+    // Last resort: try JavaScript Date parsing
+    const date = new Date(cleaned + 'T00:00:00Z');
     if (!Number.isNaN(date.getTime())) {
-      // Format as YYYY-MM-DD
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+      year = date.getUTCFullYear();
+      month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      day = String(date.getUTCDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     }
   } catch (e) {
@@ -131,8 +194,12 @@ function normalizeRisk(risk) {
 function normalizeCost(cost) {
   if (!cost) return 0;
   
-  // Remove currency symbols and commas
-  const cleaned = String(cost).replace(/[$,€£¥]/g, '').trim();
+  // Remove currency symbols, commas, and whitespace
+  let cleaned = String(cost).trim();
+  cleaned = cleaned.replace(/[$€£¥¢]/g, ''); // Remove currency symbols
+  cleaned = cleaned.replace(/,/g, ''); // Remove thousand separators
+  cleaned = cleaned.trim();
+  
   const parsed = Number.parseFloat(cleaned);
   
   return Number.isNaN(parsed) ? 0 : Math.round(parsed * 100) / 100;
