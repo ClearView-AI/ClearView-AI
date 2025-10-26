@@ -6,13 +6,27 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, loading }) {
   const [dragActive, setDragActive] = useState(false);
   const [fileName, setFileName] = useState('');
   const inputRef = useRef(null);
+  const dragCounter = useRef(0);
 
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
+  };
+
+  const handleDragIn = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
       setDragActive(true);
-    } else if (e.type === 'dragleave') {
+    }
+  };
+
+  const handleDragOut = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
       setDragActive(false);
     }
   };
@@ -21,9 +35,11 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, loading }) {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+    dragCounter.current = 0;
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+      const file = e.dataTransfer.files[0];
+      handleFile(file);
     }
   };
 
@@ -35,6 +51,22 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, loading }) {
   };
 
   const handleFile = (file) => {
+    // Validate file type
+    const validTypes = ['.csv', '.json', '.txt'];
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!validTypes.includes(fileExtension)) {
+      alert(`Invalid file type. Please upload a CSV, JSON, or TXT file.`);
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('File is too large. Maximum size is 10MB.');
+      return;
+    }
+
     setFileName(file.name);
     onUpload(file);
   };
@@ -54,8 +86,8 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, loading }) {
             : 'border-border-subtle hover:border-white/20 hover:bg-white/[0.02]',
           loading && 'opacity-50 pointer-events-none'
         )}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
+        onDragEnter={handleDragIn}
+        onDragLeave={handleDragOut}
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={handleClick}

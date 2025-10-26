@@ -20,9 +20,26 @@ function App() {
   const loading = isProcessing;
 
   const handleUpload = async (file) => {
+    // Prevent multiple simultaneous uploads
+    if (isProcessing) {
+      return;
+    }
+
     try {
+      setIsProcessing(true);
+      
+      // Validate file
+      if (!file) {
+        throw new Error('No file provided');
+      }
+
       // Read file as text for client-side processing
       const text = await file.text();
+      
+      if (!text || text.trim().length === 0) {
+        throw new Error('File is empty');
+      }
+
       setRawCSVText(text);
       
       // Generate a simple file ID for tracking
@@ -34,8 +51,11 @@ function App() {
       
       success('File uploaded successfully!');
     } catch (err) {
-      error('Failed to upload file. Please try again.');
+      const errorMessage = err.message || 'Failed to upload file';
+      error(`Upload failed: ${errorMessage}`);
       console.error('Upload error:', err);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
