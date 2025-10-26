@@ -14,6 +14,7 @@ import { api } from './lib/api';
 function App() {
   const [rawCSVText, setRawCSVText] = useState(null);
   const [csvFileId, setCsvFileId] = useState(null);
+  const [fileName, setFileName] = useState('');
   const [processedData, setProcessedData] = useState(null);
   const [normalizedDataPreview, setNormalizedDataPreview] = useState(null);
   const [aiEnhanced, setAiEnhanced] = useState(false);
@@ -46,9 +47,12 @@ function App() {
       }
 
       setRawCSVText(text);
+      setFileName(file.name);
       
-      // Reset processed data
+      // Reset processed data when uploading new file
       setProcessedData(null);
+      setNormalizedDataPreview(null);
+      setAiEnhanced(false);
       
       success('File uploaded successfully!');
     } catch (err) {
@@ -64,6 +68,7 @@ function App() {
     // Reset all state related to uploaded file
     setRawCSVText(null);
     setCsvFileId(null);
+    setFileName('');
     setProcessedData(null);
     setNormalizedDataPreview(null);
     setAiEnhanced(false);
@@ -369,6 +374,8 @@ function App() {
               onComputeEOS={handleComputeEOS}
               onClear={handleClear}
               loading={loading}
+              fileName={fileName}
+              hasNormalizedData={!!normalizedDataPreview}
             />
 
             {/* KPI Cards - 4 in a row below */}

@@ -1,12 +1,23 @@
 import { Upload, Download, Trash2 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { cn } from '../lib/utils';
 
-export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onClear, loading }) {
+/* eslint-disable react/prop-types */
+export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onClear, loading, fileName: externalFileName, hasNormalizedData }) {
   const [dragActive, setDragActive] = useState(false);
-  const [fileName, setFileName] = useState('');
+  const [internalFileName, setInternalFileName] = useState('');
   const inputRef = useRef(null);
   const dragCounter = useRef(0);
+  
+  // Use external fileName if provided, otherwise use internal state
+  const fileName = externalFileName || internalFileName;
+  
+  // Sync internal state with external prop
+  useEffect(() => {
+    if (externalFileName) {
+      setInternalFileName(externalFileName);
+    }
+  }, [externalFileName]);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -67,7 +78,7 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onClear, load
       return;
     }
 
-    setFileName(file.name);
+    setInternalFileName(file.name);
     onUpload(file);
   };
 
@@ -77,7 +88,7 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onClear, load
 
   const handleClear = (e) => {
     e.stopPropagation();
-    setFileName('');
+    setInternalFileName('');
     if (inputRef.current) {
       inputRef.current.value = '';
     }
@@ -162,7 +173,7 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onClear, load
         </button>
         <button
           onClick={onComputeEOS}
-          disabled={loading || !fileName}
+          disabled={loading || (!fileName && !hasNormalizedData)}
           className="btn-success disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-success/20 hover:shadow-success/30 transition-all"
         >
           Compute EOS
