@@ -8,14 +8,16 @@ Team Members:
 -------------
 
 Zakaria Khan
-- Role: Backend Lead & API Development
+- Role: Project Manager & Backend Lead
 - Responsibilities:
+  * Project coordination and team management
   * Backend architecture and API endpoints
   * Modular route structure (Auritas & Gemini routes)
   * File upload/download middleware
   * Database integration with Prisma
   * Environment configuration and deployment
   * API endpoint implementation and testing
+  * Code reviews and integration oversight
 
 Gui
 - Role: Frontend Lead
