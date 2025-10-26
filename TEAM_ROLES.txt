@@ -1,0 +1,70 @@
+ClearView AI - Team Roles & Responsibilities
+=============================================
+
+Project: ClearView AI - CSV Data Visualization & AI-Powered Data Cleaning
+Date: October 2025
+
+Team Members:
+-------------
+
+Zakaria Khan
+- Role: Backend Lead & API Development
+- Responsibilities:
+  * Backend architecture and API endpoints
+  * Modular route structure (Auritas & Gemini routes)
+  * File upload/download middleware
+  * Database integration with Prisma
+  * Environment configuration and deployment
+  * API endpoint implementation and testing
+
+Gui
+- Role: Frontend Lead
+- Responsibilities:
+  * User interface design and implementation
+  * Frontend application architecture
+  * CSV file upload and preview components
+  * Data visualization and display
+  * Integration with backend API endpoints
+  * User experience and responsive design
+
+Sultan
+- Role: Backend API Developer
+- Responsibilities:
+  * API endpoint development and testing
+  * CSV processing and transformation logic
+  * Data validation and error handling
+  * Backend service layer implementation
+  * API documentation
+  * Performance optimization
+
+Horacio
+- Role: AI Integration Specialist
+- Responsibilities:
+  * Gemini API integration and configuration
+  * AI-powered data extraction logic
+  * Prompt engineering for software name parsing
+  * Cache implementation and optimization
+  * AI model testing and validation
+  * Error handling for AI services
+
+
+Project Overview:
+-----------------
+ClearView AI is a data visualization and cleaning platform that:
+- Processes CSV files with custom transforms
+- Uses Gemini AI for intelligent data extraction
+- Provides real-time data preview and analytics
+- Exports cleaned/transformed data
+
+Technology Stack:
+-----------------
+- Backend: Node.js, TypeScript, Express
+- Database: Prisma + SQLite
+- AI Integration: Google Gemini API
+- File Processing: csv-parse, csv-stringify, multer
+- Frontend: [To be determined]
+
+API Endpoints:
+--------------
+- /api/auritas/viz - CSV processing and visualization
+- /api/gemini - AI-powered data extraction and cleaning
