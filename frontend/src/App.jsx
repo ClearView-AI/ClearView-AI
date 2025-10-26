@@ -323,14 +323,10 @@ function App() {
     }]
   } : null;
 
-  // Format data for table (map riskScore to risk for display)
+  // Format data for table (map riskScore to risk for display, preserve all AI fields)
   const tableData = processedData ? processedData.map(record => ({
-    vendor: record.vendor,
-    product: record.product,
-    version: record.version,
-    eosDate: record.eosDate,
-    risk: record.riskScore || record.risk,
-    cost: record.cost
+    ...record,
+    risk: record.riskScore || record.risk
   })) : null;
 
   // Render normalize preview or dashboard
