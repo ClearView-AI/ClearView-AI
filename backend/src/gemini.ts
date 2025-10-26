@@ -3,7 +3,7 @@
 import axios from "axios";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
-const MODEL = "gemini-1.5-flash";
+const MODEL = "gemini-2.5-flash";
 
 if (!GEMINI_API_KEY) {
   console.warn("[WARN] GEMINI_API_KEY not set. Gemini routes will fail until you add it to .env");
