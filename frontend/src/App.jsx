@@ -6,14 +6,16 @@ import { KPIs } from './components/KPIs';
 import { RiskCharts } from './components/RiskCharts';
 import { RecordsTable } from './components/RecordsTable';
 import { ToastContainer } from './components/Toast';
+import { NormalizePreview } from './components/NormalizePreview';
 import { useToast } from './hooks/useToast';
 import { parseCSV, normalizeData, computeEOS, calculateSummary, getChartData, exportToCSV } from './lib/dataProcessor';
 
 function App() {
-  const [, setCsvFileId] = useState(null);
   const [rawCSVText, setRawCSVText] = useState(null);
   const [processedData, setProcessedData] = useState(null);
+  const [normalizedDataPreview, setNormalizedDataPreview] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'normalize'
   
   const { toasts, success, error, removeToast } = useToast();
 
@@ -42,10 +44,6 @@ function App() {
 
       setRawCSVText(text);
       
-      // Generate a simple file ID for tracking
-      const fileId = `csv_${Date.now()}`;
-      setCsvFileId(fileId);
-      
       // Reset processed data
       setProcessedData(null);
       
@@ -62,8 +60,9 @@ function App() {
   const handleClear = () => {
     // Reset all state related to uploaded file
     setRawCSVText(null);
-    setCsvFileId(null);
     setProcessedData(null);
+    setNormalizedDataPreview(null);
+    setCurrentView('dashboard');
     success('File cleared successfully!');
   };
 
@@ -81,7 +80,10 @@ function App() {
       
       // Normalize data
       const normalized = normalizeData(rawData);
-      setProcessedData(normalized);
+      setNormalizedDataPreview(normalized);
+      
+      // Navigate to preview screen
+      setCurrentView('normalize');
       
       success('Data normalized successfully!');
     } catch (err) {
@@ -140,6 +142,14 @@ function App() {
       error('Failed to export data. Please try again.');
       console.error('Export error:', err);
     }
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentView('dashboard');
+  };
+
+  const handleNormalizedDownload = () => {
+    success('Normalized data downloaded successfully!');
   };
 
   // Calculate summary and chart data from processed data
@@ -206,6 +216,26 @@ function App() {
     risk: record.riskScore || record.risk,
     cost: record.cost
   })) : null;
+
+  // Render normalize preview or dashboard
+  if (currentView === 'normalize' && normalizedDataPreview) {
+    return (
+      <div className="flex h-screen bg-background">
+        {/* Sidebar */}
+        <Sidebar />
+
+        {/* Normalize Preview */}
+        <NormalizePreview
+          normalizedData={normalizedDataPreview}
+          onBack={handleBackToDashboard}
+          onDownload={handleNormalizedDownload}
+        />
+
+        {/* Toast Notifications */}
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background">
