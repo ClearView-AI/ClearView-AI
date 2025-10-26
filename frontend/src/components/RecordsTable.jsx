@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Search, Download, ChevronUp, ChevronDown } from 'lucide-react';
+import { Search, Download, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
 import { formatDate, getRiskBadgeClass } from '../lib/utils';
 
+/* eslint-disable react/prop-types */
 export function RecordsTable({ data, onExport }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('vendor');
@@ -176,7 +177,17 @@ export function RecordsTable({ data, onExport }) {
                   {record.version}
                 </td>
                 <td className="px-4 py-4 text-sm text-gray-300">
-                  {formatDate(record.eosDate)}
+                  <div className="flex items-center gap-2">
+                    <span>{formatDate(record.eosDate)}</span>
+                    {record.eosPredicted && (
+                      <span 
+                        className="inline-flex items-center text-xs text-blue-400" 
+                        title={`AI Predicted (${Math.round(record.eosConfidence * 100)}% confidence)\n${record.eosReasoning || ''}`}
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-4">
                   <span className={getRiskBadgeClass(record.risk)}>

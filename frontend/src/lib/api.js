@@ -44,6 +44,7 @@ export const api = {
   
   // Gemini endpoints
   extractSoftware: (data) => apiClient.post('/api/gemini/extract-software', data),
+  predictEOS: (data) => apiClient.post('/api/gemini/predict-eos', data),
   
   // Main app endpoints (to be implemented by backend)
   ingest: (formData) => apiClient.post('/api/ingest', formData, {

@@ -273,5 +273,58 @@ app.post("/api/gemini/clear-cache", (_req: Request, res: Response) => {
   res.json({ ok: true });
 });
 
+// ---------- EOS PREDICTION (with Gemini) ----------
+app.post("/api/gemini/predict-eos", async (req: Request, res: Response) => {
+  try {
+    const { records } = req.body || {};
+    if (!records || !Array.isArray(records)) {
+      return res.status(400).json({ error: "records array required" });
+    }
+
+    const key = makeCacheKey({ records });
+    const now = Date.now();
+    const hit = GEMINI_CACHE[key];
+    if (hit && hit.expiresAt > now) {
+      return res.json({ predictions: hit.value, cached: true });
+    }
+
+    const prompt = `
+You are an expert on software End-of-Support (EOS) dates. For each software record below, predict or lookup the EOS date.
+
+For each item, provide:
+- predictedEosDate (YYYY-MM-DD format or null if unknown)
+- confidence (0..1, where 1 = known official date, 0.5-0.8 = educated guess, <0.5 = uncertain)
+- source (string: "official", "estimated", "unknown")
+- reasoning (brief explanation)
+
+Return a JSON array the same length and order as inputs.
+Keys per item: { "predictedEosDate": string|null, "confidence": number, "source": string, "reasoning": string }
+
+Consider these factors:
+- Microsoft products typically have 10 year support lifecycles
+- Adobe Creative Cloud has rolling updates
+- Oracle products often have extended support options
+- Open source projects vary widely
+- Look for patterns like version numbers indicating age
+
+Software records:
+${JSON.stringify(records.map((r: any) => ({
+  vendor: r.vendor,
+  product: r.product,
+  version: r.version,
+  currentEosDate: r.eosDate || null
+})), null, 2)}
+    `.trim();
+
+    const predictions = await geminiJSON<any[]>(prompt);
+
+    GEMINI_CACHE[key] = { value: predictions, expiresAt: now + GEMINI_CACHE_TTL_MS };
+
+    res.json({ predictions, cached: false });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));

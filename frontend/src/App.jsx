@@ -161,18 +161,63 @@ function App() {
 
   const handleComputeEOS = async () => {
     try {
-      if (!processedData) {
+      // Use normalizedDataPreview if processedData isn't available yet
+      const dataToProcess = processedData || normalizedDataPreview;
+      
+      if (!dataToProcess) {
         error('Please normalize data first.');
         return;
       }
       
       setIsProcessing(true);
       
-      // Compute EOS on client side
-      const withEOS = computeEOS(processedData);
-      setProcessedData(withEOS);
-      
-      success('EOS computation completed!');
+      // Step 1: Try to predict missing EOS dates with Gemini API
+      try {
+        const eosResponse = await api.predictEOS({ records: dataToProcess });
+        const predictions = eosResponse.data.predictions || [];
+        
+        // Step 2: Merge predictions with existing data
+        const enriched = dataToProcess.map((record, index) => {
+          const prediction = predictions[index];
+          
+          // Use prediction if:
+          // 1. No EOS date exists, OR
+          // 2. Prediction has high confidence (>0.7) and provides a date
+          const shouldUsePrediction = 
+            (!record.eosDate && prediction?.predictedEosDate) ||
+            (prediction?.confidence > 0.7 && prediction?.predictedEosDate);
+          
+          if (shouldUsePrediction) {
+            return {
+              ...record,
+              eosDate: prediction.predictedEosDate,
+              eosPredicted: true,
+              eosConfidence: prediction.confidence,
+              eosSource: prediction.source,
+              eosReasoning: prediction.reasoning
+            };
+          }
+          
+          return {
+            ...record,
+            eosPredicted: false
+          };
+        });
+        
+        // Step 3: Compute risk scores based on dates
+        const withEOS = computeEOS(enriched);
+        setProcessedData(withEOS);
+        
+        success('EOS computation completed with AI predictions!');
+      } catch (geminiError) {
+        console.warn('Gemini EOS prediction failed, using local computation:', geminiError);
+        
+        // Fallback: Just compute risk scores from existing dates
+        const withEOS = computeEOS(dataToProcess);
+        setProcessedData(withEOS);
+        
+        success('EOS computation completed!');
+      }
     } catch (err) {
       error('Failed to compute EOS. Please try again.');
       console.error('EOS error:', err);
@@ -211,6 +256,7 @@ function App() {
 
   const handleBackToDashboard = () => {
     setCurrentView('dashboard');
+    // Keep the normalized data available for Compute EOS
   };
 
   const handleNormalizedDownload = () => {
