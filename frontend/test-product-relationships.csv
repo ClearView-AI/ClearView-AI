@@ -1,0 +1,17 @@
+Vendor,Product,Version,EOS Date,Risk,Cost
+Microsoft,Office 365,E3,2027-12-31,Safe,125000
+Microsoft,Word,2021,,Safe,0
+Microsoft,Excel,2021,,Safe,0
+Microsoft,PowerPoint,2021,,Safe,0
+Adobe,Creative Cloud,2024,2029-06-30,Safe,85000
+Adobe,Photoshop,2024,,Safe,0
+Adobe,Illustrator,2024,,Safe,0
+Google,Google Workspace,Enterprise,2028-12-31,Safe,95000
+Google,Gmail,Enterprise,,Safe,0
+Google,Google Drive,Enterprise,,Safe,0
+Oracle,Database Enterprise Edition,19c,2026-04-30,Safe,180000
+Oracle,SQL Developer,21.4,,Safe,0
+VMware,vSphere Enterprise Plus,7.0,2025-10-15,Safe,155000
+VMware,ESXi,7.0,,Safe,0
+SAP,Business Suite,S/4HANA,2040-12-31,Safe,500000
+
