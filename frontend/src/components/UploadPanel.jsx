@@ -1,9 +1,9 @@
-import { Upload, Download, Trash2 } from 'lucide-react';
+import { Upload, Download, Trash2, Network } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '../lib/utils';
 
 /* eslint-disable react/prop-types */
-export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onClear, loading, fileName: externalFileName, hasNormalizedData }) {
+export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onDetectRelationships, onClear, loading, fileName: externalFileName, hasNormalizedData, relationshipsDetected }) {
   const [dragActive, setDragActive] = useState(false);
   const [internalFileName, setInternalFileName] = useState('');
   const inputRef = useRef(null);
@@ -163,7 +163,7 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onClear, load
       </div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <button
           onClick={onNormalize}
           disabled={loading || !fileName}
@@ -177,6 +177,14 @@ export function UploadPanel({ onUpload, onNormalize, onComputeEOS, onClear, load
           className="btn-success disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-success/20 hover:shadow-success/30 transition-all"
         >
           Compute EOS
+        </button>
+        <button
+          onClick={onDetectRelationships}
+          disabled={loading || (!fileName && !hasNormalizedData)}
+          className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+        >
+          <Network className="w-4 h-4" />
+          {relationshipsDetected ? 'Re-detect' : 'Detect'} Relations
         </button>
       </div>
     </div>

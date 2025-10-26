@@ -18,6 +18,7 @@ function App() {
   const [processedData, setProcessedData] = useState(null);
   const [normalizedDataPreview, setNormalizedDataPreview] = useState(null);
   const [aiEnhanced, setAiEnhanced] = useState(false);
+  const [relationshipsDetected, setRelationshipsDetected] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'normalize'
   
@@ -72,6 +73,7 @@ function App() {
     setProcessedData(null);
     setNormalizedDataPreview(null);
     setAiEnhanced(false);
+    setRelationshipsDetected(false);
     setCurrentView('dashboard');
     success('File cleared successfully!');
   };
@@ -231,6 +233,72 @@ function App() {
     }
   };
 
+  const handleDetectRelationships = async () => {
+    try {
+      // Use processedData if available, otherwise normalizedDataPreview
+      const dataToAnalyze = processedData || normalizedDataPreview;
+      
+      if (!dataToAnalyze) {
+        error('Please normalize data first.');
+        return;
+      }
+      
+      setIsProcessing(true);
+      
+      try {
+        const relationshipResponse = await api.detectRelationships({ records: dataToAnalyze });
+        const relationships = relationshipResponse.data.relationships || [];
+        
+        // Merge relationship data with existing data
+        const enriched = dataToAnalyze.map((record, index) => {
+          const relationship = relationships[index];
+          
+          if (relationship && relationship.confidence > 0.7) {
+            return {
+              ...record,
+              isParent: relationship.isParent,
+              isChild: relationship.isChild,
+              parentProduct: relationship.parentProduct,
+              parentVendor: relationship.parentVendor,
+              childProducts: relationship.childProducts,
+              relationshipConfidence: relationship.confidence,
+              relationshipReasoning: relationship.reasoning
+            };
+          }
+          
+          return {
+            ...record,
+            isParent: false,
+            isChild: false,
+            parentProduct: null,
+            parentVendor: null,
+            childProducts: [],
+            relationshipConfidence: 0,
+            relationshipReasoning: null
+          };
+        });
+        
+        // Update the appropriate state
+        if (processedData) {
+          setProcessedData(enriched);
+        } else {
+          setNormalizedDataPreview(enriched);
+        }
+        
+        setRelationshipsDetected(true);
+        success('Product relationships detected successfully!');
+      } catch (geminiError) {
+        console.warn('Gemini relationship detection failed:', geminiError);
+        error('Failed to detect relationships. Please try again.');
+      }
+    } catch (err) {
+      error('Failed to detect relationships. Please try again.');
+      console.error('Relationship detection error:', err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleExport = async () => {
     try {
       if (!processedData) {
@@ -368,10 +436,12 @@ function App() {
               onUpload={handleUpload}
               onNormalize={handleNormalize}
               onComputeEOS={handleComputeEOS}
+              onDetectRelationships={handleDetectRelationships}
               onClear={handleClear}
               loading={loading}
               fileName={fileName}
               hasNormalizedData={!!normalizedDataPreview}
+              relationshipsDetected={relationshipsDetected}
             />
 
             {/* KPI Cards - 4 in a row below */}

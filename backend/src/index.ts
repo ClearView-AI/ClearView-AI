@@ -326,5 +326,69 @@ ${JSON.stringify(records.map((r: any) => ({
   }
 });
 
+// ---------- PRODUCT RELATIONSHIP DETECTION (with Gemini) ----------
+app.post("/api/gemini/detect-relationships", async (req: Request, res: Response) => {
+  try {
+    const { records } = req.body || {};
+    if (!records || !Array.isArray(records)) {
+      return res.status(400).json({ error: "records array required" });
+    }
+
+    const key = makeCacheKey({ records });
+    const now = Date.now();
+    const hit = GEMINI_CACHE[key];
+    if (hit && hit.expiresAt > now) {
+      return res.json({ relationships: hit.value, cached: true });
+    }
+
+    const prompt = `
+You are an expert on software product families and bundled software suites.
+
+Analyze this list of software products and identify parent-child relationships where one product is actually part of another.
+
+Examples of relationships:
+- Microsoft Office 365 CONTAINS Word, Excel, PowerPoint, Outlook
+- Adobe Creative Cloud CONTAINS Photoshop, Illustrator, InDesign
+- Visual Studio Enterprise CONTAINS Visual Studio Code, .NET SDK
+- G Suite / Google Workspace CONTAINS Gmail, Drive, Docs, Sheets
+- Oracle Database Enterprise Edition CONTAINS Oracle SQL Developer
+- SAP Business Suite CONTAINS SAP ERP, SAP CRM
+
+For each record, determine:
+1. Is this a PARENT product (a suite/bundle that contains other products)?
+2. Is this a CHILD product (part of a larger suite/bundle)?
+3. What is the parent product name if it's a child?
+4. What are the typical child products if it's a parent?
+
+Return a JSON array the same length and order as inputs.
+Keys per item:
+{
+  "isParent": boolean,
+  "isChild": boolean,
+  "parentProduct": string|null,  // Name of parent if this is a child
+  "parentVendor": string|null,   // Vendor of parent if this is a child
+  "childProducts": string[],     // List of typical children if this is a parent
+  "confidence": number,          // 0-1 confidence in this relationship
+  "reasoning": string            // Brief explanation
+}
+
+Software records:
+${JSON.stringify(records.map((r: any) => ({
+  vendor: r.vendor,
+  product: r.product,
+  version: r.version
+})), null, 2)}
+    `.trim();
+
+    const relationships = await geminiJSON<any[]>(prompt);
+
+    GEMINI_CACHE[key] = { value: relationships, expiresAt: now + GEMINI_CACHE_TTL_MS };
+
+    res.json({ relationships, cached: false });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
