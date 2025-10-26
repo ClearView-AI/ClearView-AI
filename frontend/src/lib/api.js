@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -44,6 +44,8 @@ export const api = {
   
   // Gemini endpoints
   extractSoftware: (data) => apiClient.post('/api/gemini/extract-software', data),
+  predictEOS: (data) => apiClient.post('/api/gemini/predict-eos', data),
+  detectRelationships: (data) => apiClient.post('/api/gemini/detect-relationships', data),
   
   // Main app endpoints (to be implemented by backend)
   ingest: (formData) => apiClient.post('/api/ingest', formData, {

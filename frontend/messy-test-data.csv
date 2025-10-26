@@ -1,0 +1,10 @@
+Vendor,Product,Version,EOS Date,Risk,Cost
+  microsoft  ,Windows Server,v2012 R2,10/10/2023,critical,"$15,000"
+ADOBE,  Creative Cloud  ,Version 2023,12/31/2026,SAFE,€8500
+oracle,Database,ver 11g,01-31-2024,medium,25000.50
+  ,Empty Vendor Product,,,,
+VMware,vSphere,6.5,2022-10-15,high,18000
+SAP,ERP,S/4HANA,2028-12-31,low,"£45,000"
+
+
+
